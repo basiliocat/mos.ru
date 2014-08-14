@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# This script checks for commited files requirements.txt, requires.txt, requirements.[a-z0-9]+.txt
+# and validates them against few rules:
+# - package description contains exact version (i.e. package==1.0.1) 
+# or
+# - version is strictly limited (i.e. package>=1.0.1,<2.0.0)
+# Commits are checked not only for added/modified lines, but whole file should be valid
+
+#   [1] REPOS-PATH   (the path to this repository)
+#   [2] TXN-NAME     (the name of the txn about to be committed)
+
+
+t1=`mktemp /tmp/svnhook.XXXXX`
+t2=`mktemp /tmp/svnhook.XXXXX`
+$SVNLOOK changed -t "$TXN" "$REPOS" | cut -b 5- | grep -E '/require(ment)?s(\.[a-z0-9]+)?\.txt' > $t1
+while read file; do
+    echo "Invalid requrements in file $file:" > $t2
+    if $SVNLOOK cat -t "$TXN" "$REPOS" $file | grep -Ev '^[a-zA-Z0-9_-]+(==.+|>=.+,<.+)$' >> $t2; then
+	cat $t2 >&2
+	rm -f $t1 $t2
+	exit 1
+    fi
+done < $t1
+rm -f $t1 $t2
+
+exit 0
