@@ -1,0 +1,7 @@
+#!/bin/sh
+
+login="user@domain.ru"
+password="пароль"
+paycode="код_плательщика"
+mosenergo_accnum="лицевой_счет_мосэнергосбыта"
+mosenergo_cntnum="номер_счетчика_мосэнергосбыта"
