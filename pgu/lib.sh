@@ -1,5 +1,9 @@
 #!/bin/sh
 
+checkConfig() {
+    [ ! -e `dirname $0`/config.sh ] && echo "Error: no config.sh found! Copy config.sh.sample to config.sh and edit it" >&2 && exit 1
+}
+
 init() {
     # temp files
     resp=`mktemp /tmp/curl-pgu-json.XXXXX`

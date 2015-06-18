@@ -15,8 +15,9 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
-. `dirname $0`/config.sh
 . `dirname $0`/lib.sh
+checkConfig
+. `dirname $0`/config.sh
 
 init
 loginPgu
