@@ -48,15 +48,27 @@ setWaterIndications() {
     curl -c $cjar -b $cjar -k -s -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_2&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$hot&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=&values%5Bindications%5D%5B1%5D%5BcounterNum%5D=$type_1&values%5Bindications%5D%5B1%5D%5BcounterVal%5D=$cold&values%5Bindications%5D%5B1%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B1%5D%5Bnum%5D=" https://pgu.mos.ru/ru/application/guis/1111/  > /dev/null
 }
 
-printMosenergoLastValue() {
+getMosenergoData() {
+    curl -c $cjar -b $cjar -k -s -d "getAction=auth&ls=$mosenergo_accnum&pu=$mosenergo_cntnum" https://pgu.mos.ru/ru/application/mosenergo/counters/ > $resp
+}
+
+parseMosenergoVars() {
+    energovars=`cat $resp |  jq -r '.fields | "id_kng", .id_kng, "nm_abn", .nm_abn, "schema", .schema' | paste -sd '=&' -`
+
+}
+
+printMosenergoLastValues() {
     echo "Previously sent values:"
     echo "Date		T1	T2	T3"
-    curl -c $cjar -b $cjar -k -s -d "getAction=auth&ls=$mosenergo_accnum&pu=$mosenergo_cntnum" https://pgu.mos.ru/ru/application/mosenergo/counters/ \
+    cat $resp \
         | jq -r ".fields | .count_submit_date, .count_t1, .count_t2, .count_t3"  | paste -sd '			\n' -
 }
 
 setMosenergoIndications() {
-    echo "Not implemented yet"
+    param="t1=$1"
+    [ "$#" -ge "2" ] && param="$param&t2=$2"
+    [ "$#" -ge "3" ] && param="$param&t3=$3"
+    curl -c $cjar -b $cjar -k -s -d "$param&$energovars" "https://pgu.mos.ru/ru/application/mosenergo/counters/?getAction=sendData"  > /dev/null
 }
 
 getLastDayOfMonth() {

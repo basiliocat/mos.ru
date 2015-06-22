@@ -22,10 +22,15 @@ init
 loginPgu
 
 if [ "$1" = "get" ]; then
-    printMosenergoLastValue
-elif [ "$1" = "set" -a "$#" -lt 2 ]; then
-    setMosenergoIndications "$2" "$3" "$4"
-    printMosenergoLastValue
+    getMosenergoData
+    printMosenergoLastValues
+elif [ "$1" = "set" -a "$#" -ge 2 ]; then
+    shift
+    getMosenergoData
+    parseMosenergoVars
+    setMosenergoIndications $@
+    getMosenergoData
+    printMosenergoLastValues
 else
     usage
 fi
