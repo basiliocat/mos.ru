@@ -27,7 +27,6 @@ if [ "$1" = "get" ]; then
 elif [ "$1" = "set" -a "$#" -ge 2 ]; then
     shift
     getMosenergoData
-    parseMosenergoVars
     setMosenergoIndications $@
     getMosenergoData
     printMosenergoLastValues

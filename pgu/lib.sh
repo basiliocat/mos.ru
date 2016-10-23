@@ -34,7 +34,8 @@ getWaterCounterIds() {
 
 getWaterIndications() {
     # get water counters
-    curl -c $cjar -b $cjar -k -s -d "getCountersInfo=true&requestParams%5Bpaycode%5D=$paycode" https://pgu.mos.ru/ru/application/guis/1111/
+    curl -c $cjar -b $cjar -k -s 'https://pgu.mos.ru/ru/application/guis/1111/' \
+        --data "getCountersInfo=true&requestParams%5BpaycodeFlat%5D%5Bpaycode%5D=$paycode&requestParams%5BpaycodeFlat%5D%5Bflat%5D=$kv"
 }
 
 removeWaterIndication() {
@@ -45,30 +46,32 @@ setWaterIndications() {
     hot="$1"
     cold="$2"
     [ "$hot" -gt "$cold" ] && echo "Error: Hot counter value ($hot) > cold counter value ($cold)!" && exit 1
-    curl -c $cjar -b $cjar -k -s -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_2&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$hot&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=&values%5Bindications%5D%5B1%5D%5BcounterNum%5D=$type_1&values%5Bindications%5D%5B1%5D%5BcounterVal%5D=$cold&values%5Bindications%5D%5B1%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B1%5D%5Bnum%5D=" https://pgu.mos.ru/ru/application/guis/1111/  > /dev/null
+    curl -c $cjar -b $cjar -k -s -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_1&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$cold&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=" https://pgu.mos.ru/ru/application/guis/1111/  > /dev/null
+    curl -c $cjar -b $cjar -k -s -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_2&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$hot&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=" https://pgu.mos.ru/ru/application/guis/1111/  > /dev/null
 }
 
 getMosenergoData() {
-    curl -c $cjar -b $cjar -k -s -d "getAction=auth&ls=$mosenergo_accnum&pu=$mosenergo_cntnum" https://pgu.mos.ru/ru/application/mosenergo/counters/ > $resp
-}
-
-parseMosenergoVars() {
-    energovars=`cat $resp |  jq -r '.fields | "id_kng", .id_kng, "nm_abn", .nm_abn, "schema", .schema' | paste -sd '=&' -`
-
+    eval `curl -c $cjar -b $cjar -k -s 'https://pgu.mos.ru/common/ajax/index.php' \
+        --data "ajaxModule=Mosenergo&ajaxAction=qMpguCheckShetch&items%5Bcode%5D=$mosenergo_accnum&items%5Bnn_schetch%5D=$mosenergo_cntnum"  \
+            | jq ".result" | sed -Ene 's/ +"(id_kng|schema)": "(.*)",?$/\1="\2"/p'`
+    eval `curl -c $cjar -b $cjar -k -s 'https://pgu.mos.ru/common/ajax/index.php' \
+        --data "ajaxModule=Mosenergo&ajaxAction=qMpguGetLastPok&items%5Bcode%5D=$mosenergo_accnum&items%5Bid_kng%5D=$id_kng&items%5Bs%D1%81hema%5D=$schema" \
+            | jq ".result" | sed -Ene 's/ +"(pok_t1|pok_t2|pok_t3|dt_obrz)": "(.*)",?$/\1="\2"/p'`
 }
 
 printMosenergoLastValues() {
     echo "Previously sent values:"
     echo "Date		T1	T2	T3"
-    cat $resp \
-        | jq -r ".fields | .count_submit_date, .count_t1, .count_t2, .count_t3"  | paste -sd '			\n' -
+    echo "${dt_obrz%T*}	$pok_t1	$pok_t2	$pok_t3"
 }
 
 setMosenergoIndications() {
-    param="t1=$1"
-    [ "$#" -ge "2" ] && param="$param&t2=$2"
-    [ "$#" -ge "3" ] && param="$param&t3=$3"
-    curl -c $cjar -b $cjar -k -s -d "$param&$energovars" "https://pgu.mos.ru/ru/application/mosenergo/counters/?getAction=sendData"  > /dev/null
+    t1="$1"
+    [ "$#" -ge "2" -a "$2" -gt "0" ] && t2="$2" || t2=0
+    [ "$#" -ge "3" -a "$2" -gt "0"] && t3="$3" || t3=0
+    curl -c $cjar -b $cjar -k -s "https://pgu.mos.ru/common/ajax/index.php" \
+        --data "ajaxModule=Mosenergo&ajaxAction=qMpguDoTransPok&items%5Bid_kng%5D=$id_kng&items%5Bcode%5D=$mosenergo_accnum&items%5Bvl_pok_t1%5D=$t1&items%5Bvl_pok_t2%5D=$t2&items%5Bvl_pok_t3%5D=$t3&items%5Bs%D1%81hema%5D=$schema" \
+            | jq ""
 }
 
 getLastDayOfMonth() {
