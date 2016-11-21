@@ -67,8 +67,10 @@ printMosenergoLastValues() {
 
 setMosenergoIndications() {
     t1="$1"
-    [ "$#" -ge "2" -a "$2" -gt "0" ] && t2="$2" || t2=0
-    [ "$#" -ge "3" -a "$2" -gt "0"] && t3="$3" || t3=0
+    t2=0
+    t3=0
+    [ "$#" -ge "2" ] && [ "$2" -gt "0" ] && t2="$2"
+    [ "$#" -ge "3" ] && [ "$3" -gt "0" ] && t3="$3"
     curl -c $cjar -b $cjar -k -s "https://pgu.mos.ru/common/ajax/index.php" \
         --data "ajaxModule=Mosenergo&ajaxAction=qMpguDoTransPok&items%5Bid_kng%5D=$id_kng&items%5Bcode%5D=$mosenergo_accnum&items%5Bvl_pok_t1%5D=$t1&items%5Bvl_pok_t2%5D=$t2&items%5Bvl_pok_t3%5D=$t3&items%5Bs%D1%81hema%5D=$schema" \
             | jq ""
