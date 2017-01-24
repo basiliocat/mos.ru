@@ -8,8 +8,6 @@ init() {
     # temp files
     resp=`mktemp /tmp/curl-pgu-json.XXXXX`
     cjar=`mktemp /tmp/curl-pgu-cookies.XXXXX`
-    # get cookies
-    curl -c $cjar -k -s https://login.mos.ru/eaidit/eaiditweb/openouterlogin.do > /dev/null
 }
 cleanup() {
     # remove temp files
@@ -20,8 +18,11 @@ cleanup() {
 loginPgu() {
     # post login data and check redirect URL - doesnt' work
 #    if ! curl -c $cjar -b $cjar -s -D - -o /dev/null -d "username=$login&password=$password" https://login.mos.ru/eaidit/eaiditweb/outerlogin.do | grep -qF "https://login.mos.ru/eaidit/eaiditweb/loginok.do"; then
+    # get cookies
+    curl -c $cjar -k -s -L "https://pgu.mos.ru/ru/oauth?login=true" > /dev/null
     # post login data, follow redirects, check resulting page
-    if ! curl -c $cjar -b $cjar -k -s -L --data-urlencode "username=$login" --data-urlencode "password=$password" https://login.mos.ru/eaidit/eaiditweb/outerlogin.do | grep -q "Your login was successful"; then
+    curl -c $cjar -b $cjar -k -s -L --data-urlencode "j_username=$login" --data-urlencode "j_password=$password" --data-urlencode "accessType=alias" https://oauth20.mos.ru/sps/j_security_check > /dev/null
+    if ! curl -c $cjar -b $cjar -k -s "https://pgu.mos.ru/common/js_v3/base/config.js.php" | grep -q '"isAuthorized":false'; then
         echo "Login failed!" >&2
         cleanup
         exit 1
