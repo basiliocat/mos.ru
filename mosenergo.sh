@@ -33,4 +33,3 @@ elif [ "$1" = "set" -a "$#" -ge 2 ]; then
 else
     usage
 fi
-cleanup

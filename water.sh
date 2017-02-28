@@ -36,4 +36,3 @@ elif [ "$1" = "remove" ]; then
 else
     usage
 fi
-cleanup
