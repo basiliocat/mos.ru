@@ -29,8 +29,8 @@ loginPgu() {
     [ -z "$login_url" ] && echo "Warning: failed to get login URL, trying default">&2 && login_url="https://oauth20.mos.ru/sps/oauth/oauth20/authorize?client_id=Wiu8G6vfDssAMOeyzf76&response_type=code&redirect_uri=https://my.mos.ru/my/website_redirect_uri"
     # post login data, follow redirects, check resulting page
     curl -s -o /dev/null -c $cjar -b $cjar -A "$ua" -e 'https://my.mos.ru/my/;auto' -k -L --data-urlencode "j_username=$login" --data-urlencode "j_password=$password" --data-urlencode "accessType=alias" https://oauth20.mos.ru/sps/j_security_check
-    if ! curl -L -c $cjar -b $cjar  -A "$ua" -k -s 'https://my.mos.ru/my/' | grep -q "SURNAME"; then
-        echo "Login failed!" >&2
+    if ! curl -L -c $cjar -b $cjar -e ';auto' -A "$ua" -k -s 'https://my.mos.ru/my/' | grep -q "SURNAME"; then
+        echo "Error: login failed!" >&2
         exit 1
     fi
 }
@@ -49,15 +49,15 @@ getWaterIndications() {
 }
 
 removeWaterIndication() {
-    curl -c $cjar -b $cjar -k -s -A "$ua" -d "removeCounterIndication=true&values%5Bpaycode%5D=$paycode&values%5BcounterId%5D=$1" https://pgu.mos.ru/ru/application/guis/1111/ > /dev/null
+    curl -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" -d "removeCounterIndication=true&values%5Bpaycode%5D=$paycode&values%5BcounterId%5D=$1" https://www.mos.ru/pgu/ru/application/guis/1111/
 }
 
 setWaterIndications() {
     hot="$1"
     cold="$2"
     [ "$hot" -gt "$cold" ] && echo "Error: Hot counter value ($hot) > cold counter value ($cold)!" && exit 1
-    curl -c $cjar -b $cjar -k -s -A "$ua" -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_1&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$cold&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=" https://pgu.mos.ru/ru/application/guis/1111/  > /dev/null
-    curl -c $cjar -b $cjar -k -s -A "$ua" -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_2&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$hot&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=" https://pgu.mos.ru/ru/application/guis/1111/  > /dev/null
+    curl -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_1&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$cold&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=" https://www.mos.ru/pgu/ru/application/guis/1111/
+    curl -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_2&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$hot&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=" https://www.mos.ru/pgu/ru/application/guis/1111/
 }
 
 getMosenergoData() {
@@ -84,7 +84,7 @@ setMosenergoIndications() {
     t3=0
     [ "$#" -ge "2" ] && [ "$2" -gt "0" ] && t2="$2"
     [ "$#" -ge "3" ] && [ "$3" -gt "0" ] && t3="$3"
-    curl -c $cjar -b $cjar -k -s -A "$ua" "https://pgu.mos.ru/common/ajax/index.php" \
+    curl -c $cjar -b $cjar -k -s -A "$ua" "https://www.mos.ru/pgu/common/ajax/index.php" \
         --data "ajaxModule=Mosenergo&ajaxAction=qMpguDoTransPok&items%5Bid_kng%5D=$id_kng&items%5Bcode%5D=$mosenergo_accnum&items%5Bvl_pok_t1%5D=$t1&items%5Bvl_pok_t2%5D=$t2&items%5Bvl_pok_t3%5D=$t3&items%5Bs%D1%81hema%5D=$schema" \
             | jq ""
 }
