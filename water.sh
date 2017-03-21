@@ -1,12 +1,13 @@
 #!/bin/sh
 
 usage() {
+    me=`basename $0`
     cat >&2 << EOF
-$0 - commandline tool to send water counter values to pgu.mos.ru
+$me - command line tool to send water counter values to https://my.mos.ru
 Usage:
-   $0 get - get counter values
-   $0 set <hot_counter> <cold_counter> - set counter values for current month
-   $0 remove - remove last values for both cold and hot counter
+   $me get - get counter values
+   $me set <hot_counter> <cold_counter> - set counter values for current month
+   $me remove - remove last values for both cold and hot counter
 EOF
 }
 

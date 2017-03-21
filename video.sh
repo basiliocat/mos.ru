@@ -1,9 +1,9 @@
 #!/bin/sh
 
 usage() {
-    $me = `basename $0`
+    me=`basename $0`
     cat >&2 << EOF
-$me - commandline tool to get video stream from video.mos.ru
+$me - get cctv video stream from video.mos.ru
 Usage:
     $me <camera_id>
 EOF

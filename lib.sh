@@ -104,6 +104,6 @@ printWaterHistory() {
 }
 
 printWaterLastValues() {
-    echo "Last set values (cold,hot): "
+    echo "Last set values (hot,cold): "
     getWaterIndications | jq -r ".counter | sort_by(.type)[] | .indications[] | select(.period==\"$dt+03:00\").indication" | paste -sd ',' -
 }
