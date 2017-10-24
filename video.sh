@@ -24,9 +24,9 @@ while true; do
     loginPgu
     while true; do
         curl -o $resp -c $cjar -b $cjar -k -s -A "$ua" -e "https://video.mos.ru/;auto" -L "https://video.mos.ru/camera/ajaxGetVideoUrl?id=$cam_id"
-        grep -q "https://login.mos.ru" $resp && echo "Warning: re-login requested">&2 && break
+        grep -q "https://login.mos.ru" $resp && echo "Warning: re-login requested">&2 && sleep 10 && break
         m3u=`cat $resp | jq -r '.live | .ios | .url[0]'`
-        [ -z "$m3u" ] && echo "Error: couldn't get playlist URL">&2 && exit 1
+        [ -z "$m3u" ] && echo "Error: couldn't get playlist URL, retrying">&2 && sleep 20 && continue
         ts_url=`curl -c $cjar -b $cjar -k -A "$ua" -s -L "$m3u" | grep -m 1 "http" | tr -d '\r'`
         [ -z "$ts_url" ] && echo "Warning: failed get video stream URL">&2 && sleep 10 && continue
         [ ! -d "video/$cam_id" ] && mkdir -p "video/$cam_id"
