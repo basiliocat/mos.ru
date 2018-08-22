@@ -44,8 +44,8 @@ getWaterIndications() {
     curl -s -o /dev/null -L -c $cjar -b $cjar -k -A "$ua" https://www.mos.ru/pgu/ru/application/guis/1111/
 
     # get water counters
-    curl -c $cjar -b $cjar -k -s -A "$ua" 'https://www.mos.ru/pgu/ru/application/guis/1111/' \
-        --data "getCountersInfo=true&requestParams%5BpaycodeFlat%5D%5Bpaycode%5D=$paycode&requestParams%5BpaycodeFlat%5D%5Bflat%5D=$kv"
+    curl -c $cjar -b $cjar -k -s -A "$ua" 'https://www.mos.ru/pgu/common/ajax/index.php' \
+        --data "ajaxModule=Guis&ajaxAction=getCountersInfo&items%5Bpaycode%5D=$paycode&items%5Bflat%5D=$kv"
 }
 
 removeWaterIndication() {
