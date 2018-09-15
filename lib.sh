@@ -56,7 +56,6 @@ removeWaterIndication() {
 setWaterIndications() {
     hot="$1"
     cold="$2"
-    [ "$hot" -gt "$cold" ] && echo "Error: Hot counter value ($hot) > cold counter value ($cold)!" && exit 1
     curl -s -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" 'https://www.mos.ru/pgu/common/ajax/index.php' \
 		--data "ajaxModule=Guis&ajaxAction=addCounterInfo&items%5Bpaycode%5D=$paycode&items%5Bflat%5D=$kv&items%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_1&items%5Bindications%5D%5B0%5D%5BcounterVal%5D=$cold&items%5Bindications%5D%5B0%5D%5Bnum%5D:$num_1&items%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&items%5Bindications%5D%5B1%5D%5BcounterNum%5D=$type_2&items%5Bindications%5D%5B1%5D%5BcounterVal%5D=$hot&items%5Bindications%5D%5B1%5D%5Bnum%5D:$num_2&items%5Bindications%5D%5B1%5D%5Bperiod%5D=$dt"
 }
