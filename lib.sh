@@ -14,7 +14,7 @@ init() {
     # temp files
     resp=`mktemp /tmp/curl-pgu-json.XXXXX`
     cjar=`mktemp /tmp/curl-pgu-cookies.XXXXX`
-    #trap "cleanup; exit 1" INT TERM EXIT
+    trap "cleanup; exit 1" INT TERM EXIT
 }
 
 cleanup() {
