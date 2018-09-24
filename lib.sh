@@ -36,7 +36,7 @@ loginPgu() {
 }
 
 getWaterCounterIds() {
-    eval `cat $resp |  jq -r '.counter | sort_by(.type)[] | "type", .type, .counterId' | paste -sd '_=;' -`
+    eval `cat $resp |  jq -r '.counter | sort_by(.type)[] | "type", .type, .counterId, "num", .type, .num' | paste -sd '_=;' -`
 }
 
 getWaterIndications() {
@@ -44,20 +44,20 @@ getWaterIndications() {
     curl -s -o /dev/null -L -c $cjar -b $cjar -k -A "$ua" https://www.mos.ru/pgu/ru/application/guis/1111/
 
     # get water counters
-    curl -c $cjar -b $cjar -k -s -A "$ua" 'https://www.mos.ru/pgu/ru/application/guis/1111/' \
-        --data "getCountersInfo=true&requestParams%5BpaycodeFlat%5D%5Bpaycode%5D=$paycode&requestParams%5BpaycodeFlat%5D%5Bflat%5D=$kv"
+    curl -c $cjar -b $cjar -k -s -A "$ua" 'https://www.mos.ru/pgu/common/ajax/index.php' \
+        --data "ajaxModule=Guis&ajaxAction=getCountersInfo&items%5Bpaycode%5D=$paycode&items%5Bflat%5D=$kv"
 }
 
 removeWaterIndication() {
-    curl -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" -d "removeCounterIndication=true&values%5Bpaycode%5D=$paycode&values%5BcounterId%5D=$1" https://www.mos.ru/pgu/ru/application/guis/1111/
+    curl -s -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" 'https://www.mos.ru/pgu/common/ajax/index.php' \
+		--data "ajaxModule=Guis&ajaxAction=removeCounterIndication&items%5Bpaycode%5D=$paycode&items%5Bflat%5D=$kv&items%5BcounterId%5D=$1"
 }
 
 setWaterIndications() {
     hot="$1"
     cold="$2"
-    [ "$hot" -gt "$cold" ] && echo "Error: Hot counter value ($hot) > cold counter value ($cold)!" && exit 1
-    curl -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_1&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$cold&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=" https://www.mos.ru/pgu/ru/application/guis/1111/
-    curl -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" -d "addCounterInfo=true&values%5Bpaycode%5D=$paycode&values%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_2&values%5Bindications%5D%5B0%5D%5BcounterVal%5D=$hot&values%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&values%5Bindications%5D%5B0%5D%5Bnum%5D=" https://www.mos.ru/pgu/ru/application/guis/1111/
+    curl -s -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" 'https://www.mos.ru/pgu/common/ajax/index.php' \
+		--data "ajaxModule=Guis&ajaxAction=addCounterInfo&items%5Bpaycode%5D=$paycode&items%5Bflat%5D=$kv&items%5Bindications%5D%5B0%5D%5BcounterNum%5D=$type_1&items%5Bindications%5D%5B0%5D%5BcounterVal%5D=$cold&items%5Bindications%5D%5B0%5D%5Bnum%5D=$num_1&items%5Bindications%5D%5B0%5D%5Bperiod%5D=$dt&items%5Bindications%5D%5B1%5D%5BcounterNum%5D=$type_2&items%5Bindications%5D%5B1%5D%5BcounterVal%5D=$hot&items%5Bindications%5D%5B1%5D%5Bnum%5D=$num_2&items%5Bindications%5D%5B1%5D%5Bperiod%5D=$dt"
 }
 
 getMosenergoData() {
@@ -104,6 +104,6 @@ printWaterHistory() {
 }
 
 printWaterLastValues() {
-    echo "Last set values (hot,cold): "
+    echo "Last set values (cold, hot): "
     getWaterIndications | jq -r ".counter | sort_by(.type)[] | .indications[] | select(.period==\"$dt+03:00\").indication" | paste -sd ',' -
 }
