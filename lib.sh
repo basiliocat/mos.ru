@@ -19,17 +19,19 @@ init() {
 
 cleanup() {
     # remove temp files
-    [ -e "$cjar" ] && rm $cjar
+    [ -e "$cjar" ] && rm "$cjar"
     [ -e "$resp" ] && rm "$resp"
 }
 
 loginPgu() {
     # get login url
     login_url=`curl -s -k -L -c $cjar -b $cjar -A "$ua" -e ';auto' 'https://my.mos.ru/my/' | sed -Ene 's~.*"(https://oauth20.mos.ru/[^"]+)".*~\1~p'`
-    [ -z "$login_url" ] && echo "Warning: failed to get login URL, trying default">&2 && login_url="https://oauth20.mos.ru/sps/oauth/oauth20/authorize?client_id=Wiu8G6vfDssAMOeyzf76&response_type=code&redirect_uri=https://my.mos.ru/my/website_redirect_uri"
+    [ -z "$login_url" ] && echo "Warning: failed to get login URL, trying default">&2 && login_url='https://oauth20.mos.ru/sps/oauth/oauth20/authorize?client_id=Wiu8G6vfDssAMOeyzf76&response_type=code&redirect_uri=https://my.mos.ru/my/website_redirect_uri'
     # post login data, follow redirects, check resulting page
-    curl -s -o /dev/null -c $cjar -b $cjar -A "$ua" -e 'https://my.mos.ru/my/;auto' -k -L --data-urlencode "j_username=$login" --data-urlencode "j_password=$password" --data-urlencode "accessType=alias" https://oauth20.mos.ru/sps/j_security_check
-    if ! curl -L -c $cjar -b $cjar -e ';auto' -A "$ua" -k -s 'https://my.mos.ru/my/' | grep -q "SURNAME"; then
+    curl -s -o /dev/null -c $cjar -b $cjar -A "$ua" -e ';auto' -k -L "$login_url"
+    curl -s -o /dev/null -c $cjar -b $cjar -A "$ua" -e ';auto' -k -L --data-urlencode "login=$login" --data-urlencode "password=$password" --data-urlencode "me=on" 'https://login.mos.ru/sps/login/methods/password'
+    curl -s -o /dev/null -c $cjar -b $cjar -A "$ua" -e ';auto' -k -L 'https://beta-my.mos.ru/my/'
+    if ! cat $cjar | grep -q "Ltpatoken2"; then
         echo "Error: login failed!" >&2
         exit 1
     fi
