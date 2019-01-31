@@ -12,8 +12,13 @@ checkConfig() {
 
 init() {
     # temp files
-    resp=`mktemp /tmp/curl-pgu-json.XXXXX`
-    cjar=`mktemp /tmp/curl-pgu-cookies.XXXXX`
+    if mktemp --help 2>&1|grep -q BusyBox; then
+        resp=`mktemp -t curl-pgu-json.XXXXXX`
+        cjar=`mktemp -t curl-pgu-cookies.XXXXXX`
+    else
+        resp=`mktemp /tmp/curl-pgu-json.XXXXX`
+        cjar=`mktemp /tmp/curl-pgu-cookies.XXXXX`
+    fi
     trap "cleanup; exit 1" INT TERM EXIT
 }
 
@@ -90,7 +95,14 @@ setMosenergoIndications() {
 }
 
 getLastDayOfMonth() {
-    if [ `uname` = "Linux" ]; then
+    if date --help 2>&1|grep -q BusyBox; then
+        case `date -d "$(date +'%Y-%m-31')" +'%d'` in
+            31) dt=`date +'%Y-%m-31'` ;;
+            01) dt=`date +'%Y-%m-30'` ;;
+            02) dt=`date +'%Y-%m-29'` ;;
+            03) dt=`date +'%Y-%m-28'` ;;
+        esac
+    elif [ `uname` = "Linux" ]; then
         dt=`date -d "$(date +'%Y-%m-1') +1 month -1 day" +'%Y-%m-%d'`
     else
         dt=`date -v1d -v+1m -v-1d +'%Y-%m-%d'`
