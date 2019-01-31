@@ -12,8 +12,13 @@ checkConfig() {
 
 init() {
     # temp files
-    resp=`mktemp /tmp/curl-pgu-json.XXXXX`
-    cjar=`mktemp /tmp/curl-pgu-cookies.XXXXX`
+    if mktemp --help 2>&1|grep -q BusyBox; then
+        resp=`mktemp -t curl-pgu-json.XXXXXX`
+        cjar=`mktemp -t curl-pgu-cookies.XXXXXX`
+    else
+        resp=`mktemp /tmp/curl-pgu-json.XXXXX`
+        cjar=`mktemp /tmp/curl-pgu-cookies.XXXXX`
+    fi
     trap "cleanup; exit 1" INT TERM EXIT
 }
 
