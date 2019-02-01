@@ -49,7 +49,7 @@ getWaterIndications() {
 }
 
 removeWaterIndication() {
-    for i in cntid; do
+    for i in $cntid; do
         eval $i
         curl -s -o /dev/null -c $cjar -b $cjar -k -s -A "$ua" 'https://www.mos.ru/pgu/common/ajax/index.php' \
 		--data "ajaxModule=Guis&ajaxAction=removeCounterIndication&items%5Bpaycode%5D=$paycode&items%5Bflat%5D=$kv&items%5BcounterId%5D=$id"
