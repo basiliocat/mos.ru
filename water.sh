@@ -6,8 +6,8 @@ usage() {
 $me - command line tool to send water counter values to https://my.mos.ru
 Usage:
    $me get - get counter values
-   $me set <hot_counter> <cold_counter> - set counter values for current month
-   $me remove - remove last values for both cold and hot counter
+   $me set <value list> - set counter values for current month; the counters in the list follow the same order as in $me get
+   $me remove - remove last values for all counters
 EOF
 }
 
@@ -28,12 +28,12 @@ getWaterCounterIds
 
 if [ "$1" = "get" ]; then
     printWaterHistory
-elif [ "$1" = "set" -a "$#" -eq 3 ]; then
-    setWaterIndications "$2" "$3"
+elif [ "$1" = "set" ]; then
+    shift
+    setWaterIndications $@
     printWaterLastValues
 elif [ "$1" = "remove" ]; then
-    removeWaterIndication $type_1
-    removeWaterIndication $type_2
+    removeWaterIndication
 else
     usage
 fi
