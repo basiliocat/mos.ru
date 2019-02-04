@@ -6,7 +6,7 @@ usage() {
 $me - command line tool to send water counter values to https://my.mos.ru
 Usage:
    $me get - get counter values
-   $me set <value list> - set counter values for current month
+   $me set <value list> - set counter values for current month; the counters in the list follow the same order as in $me get
    $me remove - remove last values for all counters
 EOF
 }
