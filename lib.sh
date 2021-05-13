@@ -13,13 +13,13 @@ checkConfig() {
 init() {
     # temp files
     resp=`mktemp /tmp/curl-pgu-json.XXXXX`
-    cjar=`mktemp /tmp/curl-pgu-cookies.XXXXX`
+    cjar=cookies.txt
     trap "cleanup; exit 1" INT TERM EXIT
 }
 
 cleanup() {
     # remove temp files
-    [ -e "$cjar" ] && rm $cjar
+#    [ -e "$cjar" ] && rm $cjar
     [ -e "$resp" ] && rm "$resp"
 }
 
