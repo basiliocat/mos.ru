@@ -29,10 +29,11 @@ loginPgu() {
     [ -z "$login_url" ] && echo "Warning: failed to get login URL, trying default">&2 && login_url='https://oauth20.mos.ru/sps/oauth/oauth20/authorize?client_id=Wiu8G6vfDssAMOeyzf76&response_type=code&red
 irect_uri=https://my.mos.ru/my/website_redirect_uri'                                                       
     # post login data, follow redirects, check resulting page
-    curl -s -c $cjar -b $cjar -A "$ua" -e ';auto' -k -L "$login_url" | tee > ./log/out1.log
-    csrftokenname="$(sed -En 's/.*csrf-token-name.*content=\x27([^\x27]+).*/\1/p' ./log/out1.log)"
-    csrftokenvalue="$(sed -En 's/.*csrf-token-value.*content=\x27([^\x27]+).*/\1/p' ./log/out1.log)"      
-    curl -s \                                                                                                                                      
+    curl -s -c $cjar -b $cjar -A "$ua" -e ';auto' -k -L "$login_url" | tee > $resp
+    csrftokenname="$(sed -En 's/.*csrf-token-name.*content=\x27([^\x27]+).*/\1/p' $resp)"
+    csrftokenvalue="$(sed -En 's/.*csrf-token-value.*content=\x27([^\x27]+).*/\1/p' $resp)"      
+    curl -s \
+        -o /dev/null \
         --cookie "csrf-token-name=$csrftokenname" \                                                                                                                                                        
         --cookie "csrf-token-value=$csrftokenvalue" \
         -c $cjar \     
@@ -46,11 +47,12 @@ irect_uri=https://my.mos.ru/my/website_redirect_uri'
         --data-urlencode "password=$password" \
         --data-urlencode "$csrftokenname=$csrftokenvalue" \
         --data-urlencode "alien=false" \
-        'https://login.mos.ru/sps/login/methods/password' | tee > ./log/out2.log
+        'https://login.mos.ru/sps/login/methods/password'
 
     if ! cat $cjar | grep -q "Ltpatoken2"; then
         read -p "Enter SMS code: " smscode
         curl -s \
+	    -o /dev/null \
             --cookie "csrf-token-name=$csrftokenname" \
             --cookie "csrf-token-value=$csrftokenvalue" \
             -c $cjar \
@@ -61,7 +63,7 @@ irect_uri=https://my.mos.ru/my/website_redirect_uri'
             -L \
             --data-urlencode "sms-code=$smscode" \
             --data-urlencode "$csrftokenname=$csrftokenvalue" \
-            'https://login.mos.ru/sps/login/methods/sms' | tee > ./log/out3.log
+            'https://login.mos.ru/sps/login/methods/sms'
     fi
     if ! cat $cjar | grep -q "Ltpatoken2"; then
         echo "Error: login failed!" >&2
